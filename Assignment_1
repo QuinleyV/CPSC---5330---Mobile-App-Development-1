@@ -3,13 +3,13 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image("")
+            Image("coaching")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 250)
                 .padding()
 
-            Text("")
+            Text("Coaching youth basketball is something I really enjoy.")
                 .font(.title2)
                 .padding()
         }

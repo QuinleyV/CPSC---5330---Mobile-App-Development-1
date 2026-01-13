@@ -1,0 +1,22 @@
+import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Image("")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 250)
+                .padding()
+
+            Text("")
+                .font(.title2)
+                .padding()
+        }
+        .background(Color(.systemGray6))
+    }
+}
+
+#Preview {
+    ContentView()
+}

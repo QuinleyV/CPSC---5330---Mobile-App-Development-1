@@ -1,0 +1,74 @@
+import Foundation
+
+// At least 5 books stored as tuples
+let books: [(title: String, pages: Int)] = [
+    (title: "1984", pages: 328),
+    (title: "To Kill a Mockingbird", pages: 281),
+    (title: "The Great Gatsby", pages: 180),
+    (title: "Moby-Dick", pages: 635),
+    (title: "The Catcher in the Rye", pages: 214),
+    (title: "Fahrenheit 451", pages: 249)
+]
+
+
+// Finds the shortest book, longest book, and average page count
+func pageSummary(
+    for books: [(title: String, pages: Int)]
+) -> (
+    shortest: (title: String, pages: Int),
+    longest: (title: String, pages: Int),
+    average: Double
+) {
+    
+    var shortestBook = books[0]
+    var longestBook = books[0]
+    var totalPages = 0
+    
+    for book in books {
+        totalPages += book.pages
+        
+        if book.pages < shortestBook.pages {
+            shortestBook = book
+        }
+        
+        if book.pages > longestBook.pages {
+            longestBook = book
+        }
+    }
+    
+    let averagePages = Double(totalPages) / Double(books.count)
+    
+    return (
+        shortest: shortestBook,
+        longest: longestBook,
+        average: averagePages
+    )
+}
+
+
+// Selects books over a certain page count
+func filterBooks(
+    _ books: [(title: String, pages: Int)],
+    using condition: ((title: String, pages: Int)) -> Bool
+) -> [(title: String, pages: Int)] {
+    return books.filter(condition)
+}
+
+
+let summary = pageSummary(for: books)
+
+print("=== Book Page Summary ===")
+print("Shortest Book: \(summary.shortest.title) - \(summary.shortest.pages) pages")
+print("Longest Book: \(summary.longest.title) - \(summary.longest.pages) pages")
+print("Average Pages: \(String(format: "%.1f", summary.average))")
+print()
+
+// Example filter: books longer than 300 pages
+let longBooks = filterBooks(books) { book in
+    book.pages > 300
+}
+
+print("=== Books Over 300 Pages ===")
+for book in longBooks {
+    print("- \(book.title): \(book.pages) pages")
+}

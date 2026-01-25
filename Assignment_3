@@ -1,0 +1,153 @@
+import UIKit
+
+final class ViewController: UIViewController {
+
+    private let displayLabel: UILabel = {
+        let label = UILabel()
+        label.text = "0"
+        label.textAlignment = .right
+        label.font = .systemFont(ofSize: 56, weight: .light)
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.3
+        label.numberOfLines = 1
+        label.backgroundColor = .secondarySystemBackground
+        label.layer.cornerRadius = 16
+        label.layer.masksToBounds = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.setContentHuggingPriority(.required, for: .vertical)
+        return label
+    }()
+
+    private let mainStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.distribution = .fill
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+
+        // Build UI
+        view.addSubview(mainStack)
+        mainStack.addArrangedSubview(displayLabel)
+
+        let buttonsStack = makeButtonsStack()
+        mainStack.addArrangedSubview(buttonsStack)
+
+        // Layout main stack to adapt on all sizes (iPhone/iPad, portrait/landscape)
+        NSLayoutConstraint.activate([
+            mainStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            mainStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            mainStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+
+            // Make the display area a reasonable height but flexible
+            displayLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 90)
+        ])
+    }
+
+    // MARK: - StackView Grid
+
+    private func makeButtonsStack() -> UIStackView {
+        // 5 rows, 4 columns layout (like iOS-style)
+        let rows: [[String]] = [
+            ["AC", "+/-", "%", "÷"],
+            ["7", "8", "9", "×"],
+            ["4", "5", "6", "−"],
+            ["1", "2", "3", "+"],
+            ["0", ".", "=", ""]
+        ]
+
+        let vertical = UIStackView()
+        vertical.axis = .vertical
+        vertical.spacing = 12
+        vertical.distribution = .fillEqually
+        vertical.translatesAutoresizingMaskIntoConstraints = false
+
+        for (rowIndex, titles) in rows.enumerated() {
+            let rowStack = UIStackView()
+            rowStack.axis = .horizontal
+            rowStack.spacing = 12
+            rowStack.distribution = .fillEqually
+
+            for (colIndex, title) in titles.enumerated() {
+                if rowIndex == 4 && colIndex == 3 && title.isEmpty {
+                    // Optional blank spacer to keep 4 columns aligned on last row
+                    let spacer = UIView()
+                    rowStack.addArrangedSubview(spacer)
+                    continue
+                }
+
+                let button = makeButton(title: title)
+
+                // Make "0" wider (optional iOS-style). If you want a perfect 4-col grid, remove this block.
+                if rowIndex == 4 && colIndex == 0 && title == "0" {
+                    // Replace single "0" with a container that spans 2 spots
+                    let wide = UIStackView()
+                    wide.axis = .horizontal
+                    wide.spacing = 12
+                    wide.distribution = .fillEqually
+
+                    let zero = button
+                    let filler = UIView()
+                    filler.translatesAutoresizingMaskIntoConstraints = false
+
+                    wide.addArrangedSubview(zero)
+                    wide.addArrangedSubview(filler)
+
+                    // Put wide container, then skip the next slot by adding a spacer
+                    rowStack.addArrangedSubview(wide)
+
+                    // Add "." next, then "=" next, then blank spacer already handled
+                    continue
+                }
+
+                // If we used the "0 is wide" approach, we need to skip adding "0" again:
+                if rowIndex == 4 && colIndex == 1 && titles[0] == "0" {
+                    // This slot is already taken by the wide container’s filler
+                    continue
+                }
+
+                rowStack.addArrangedSubview(button)
+            }
+
+            vertical.addArrangedSubview(rowStack)
+        }
+
+        return vertical
+    }
+
+    private func makeButton(title: String) -> UIButton {
+        var config = UIButton.Configuration.filled()
+        config.title = title
+        config.baseBackgroundColor = colorFor(title: title)
+        config.baseForegroundColor = .white
+        config.cornerStyle = .large
+
+        let button = UIButton(configuration: config)
+        button.titleLabel?.font = .systemFont(ofSize: 26, weight: .medium)
+        button.translatesAutoresizingMaskIntoConstraints = false
+
+        // Design-only action (no calculator logic)
+        button.addAction(UIAction(handler: { _ in
+            print("Tapped \(title)")
+        }), for: .touchUpInside)
+
+        return button
+    }
+
+    private func colorFor(title: String) -> UIColor {
+        // Simple styling categories (feel free to change)
+        let ops = ["÷", "×", "−", "+", "="]
+        let misc = ["AC", "+/-", "%"]
+
+        if ops.contains(title) { return .systemOrange }
+        if misc.contains(title) { return .systemGray }
+        if title == "0" || Int(title) != nil || title == "." { return .systemBlue }
+        return .systemGray2
+    }
+}

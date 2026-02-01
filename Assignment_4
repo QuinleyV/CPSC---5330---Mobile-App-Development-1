@@ -1,0 +1,73 @@
+import UIKit
+
+final class ViewController: UIViewController {
+
+    @IBOutlet private weak var moodLabel: UILabel!
+    @IBOutlet private weak var moodSlider: UISlider!
+    @IBOutlet private weak var datePicker: UIDatePicker!
+    @IBOutlet private weak var savedLabel: UILabel!
+
+    private let dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .medium      // e.g., "May 30, 2026"
+        df.timeStyle = .none
+        return df
+    }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Slider setup
+        moodSlider.minimumValue = 0
+        moodSlider.maximumValue = 100
+        moodSlider.isContinuous = true
+
+        // Start at a reasonable default
+        moodSlider.value = 50
+        updateMoodLabel(for: moodSlider.value)
+
+        // Date picker setup (optional, but common)
+        datePicker.datePickerMode = .date
+
+        // Start saved label empty
+        savedLabel.text = ""
+        savedLabel.numberOfLines = 0
+    }
+
+    @IBAction private func sliderChanged(_ sender: UISlider) {
+        updateMoodLabel(for: sender.value)
+    }
+
+    @IBAction private func saveTapped(_ sender: UIButton) {
+        let mood = moodInfo(for: moodSlider.value)
+        let dateString = dateFormatter.string(from: datePicker.date)
+
+        // Example: "On May 30, 2026 you felt 😄 Very Happy"
+        savedLabel.text = "On \(dateString), you felt \(mood.emoji) \(mood.text)"
+    }
+
+    private func updateMoodLabel(for value: Float) {
+        let mood = moodInfo(for: value)
+        moodLabel.text = "Feeling: \(mood.text) \(mood.emoji)"
+    }
+
+    private func moodInfo(for value: Float) -> (text: String, emoji: String) {
+        let v = Int(value.rounded())
+
+        switch v {
+        case 0...20:
+            return ("Very Sad", "😢")
+        case 21...40:
+            return ("Sad", "🙁")
+        case 41...60:
+            return ("Neutral", "😐")
+        case 61...80:
+            return ("Happy", "🙂")
+        case 81...100:
+            return ("Very Happy", "😄")
+        default:
+            // Should never happen, but keeps it safe
+            return ("Neutral", "😐")
+        }
+    }
+}

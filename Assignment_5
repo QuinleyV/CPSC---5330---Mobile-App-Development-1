@@ -1,0 +1,104 @@
+import Foundation
+
+struct AdventureChoice {
+    let title: String
+    let nextNodeID: String
+}
+
+struct AdventureNode {
+    let id: String
+    let text: String
+    let choices: [AdventureChoice]   // If empty => ending
+    let isSuccessEnding: Bool        // Only relevant if choices is empty
+}
+
+final class AdventureStory {
+    private(set) var nodes: [String: AdventureNode] = [:]
+    let startNodeID: String = "start"
+
+    init() {
+        // --- Layer 1 (start) ---
+        nodes["start"] = AdventureNode(
+            id: "start",
+            text: """
+            You wake up in a dark space station. Warning lights flash.
+            Oxygen is dropping. What do you do first?
+            """,
+            choices: [
+                AdventureChoice(title: "Go to the Control Room", nextNodeID: "controlRoom"),
+                AdventureChoice(title: "Check the Storage Bay", nextNodeID: "storageBay"),
+                AdventureChoice(title: "Head to the Escape Pods", nextNodeID: "escapePods")
+            ],
+            isSuccessEnding: false
+        )
+
+        // --- Layer 2 ---
+        nodes["controlRoom"] = AdventureNode(
+            id: "controlRoom",
+            text: """
+            The Control Room door is jammed. You see a keypad and a vent.
+            """,
+            choices: [
+                AdventureChoice(title: "Try to hack the keypad", nextNodeID: "hackKeypad"),
+                AdventureChoice(title: "Crawl through the vent", nextNodeID: "ventCrawl")
+            ],
+            isSuccessEnding: false
+        )
+
+        nodes["storageBay"] = AdventureNode(
+            id: "storageBay",
+            text: """
+            The Storage Bay has supplies… and strange scratching sounds.
+            """,
+            choices: [
+                AdventureChoice(title: "Grab an oxygen tank", nextNodeID: "oxygenTank"),
+                AdventureChoice(title: "Investigate the sound", nextNodeID: "investigateSound")
+            ],
+            isSuccessEnding: false
+        )
+
+        nodes["escapePods"] = AdventureNode(
+            id: "escapePods",
+            text: """
+            Two pods remain. One has a green status light, one is flickering red.
+            """,
+            choices: [
+                AdventureChoice(title: "Enter the green pod", nextNodeID: "greenPod"),
+                AdventureChoice(title: "Enter the red pod", nextNodeID: "redPod")
+            ],
+            isSuccessEnding: false
+        )
+
+        // --- Layer 3 (these lead to endings) ---
+        nodes["hackKeypad"] = AdventureNode(
+            id: "hackKeypad",
+            text: """
+            You try random overrides. The keypad sparks and locks permanently.
+            Oxygen continues to drop…
+            """,
+            choices: [],
+            isSuccessEnding: false
+        )
+
+        nodes["ventCrawl"] = AdventureNode(
+            id: "ventCrawl",
+            text: """
+            You crawl through the vent and reach a manual override lever.
+            The Control Room opens. You stabilize life support!
+            """,
+            choices: [],
+            isSuccessEnding: true
+        )
+
+        nodes["oxygenTank"] = AdventureNode(
+            id: "oxygenTank",
+            text: """
+            You secure an oxygen tank and follow emergency signs to a safe zone.
+            You survive long enough for rescue to arrive.
+            """,
+            choices: [],
+            isSuccessEnding: true
+        )
+
+        nodes["investigateSound"] = AdventureNode(
+            id: "invest

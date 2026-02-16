@@ -1,0 +1,154 @@
+
+Create CurrencyConverter.swif
+
+import Foundation
+
+struct CurrencyConverter {
+    // Use whatever rates your class expects; these are placeholders.
+    // You can rename “Currency 1” to “EUR”, etc, if you want.
+    let rates: [Int: Double] = [
+        1: 0.92,
+        2: 0.79,
+        3: 145.30,
+        4: 1.37
+    ]
+
+    func convert(usd: Int, selected: [Int]) -> [Int: Double] {
+        var result: [Int: Double] = [:]
+        for key in selected {
+            if let rate = rates[key] {
+                result[key] = Double(usd) * rate
+            }
+        }
+        return result
+    }
+}
+
+-------------------------------------------------------------------------------------
+\
+Screen 1
+Create InputViewController.swift
+
+
+
+import UIKit
+
+final class InputViewController: UIViewController {
+
+    @IBOutlet private weak var usdTextField: UITextField!
+    @IBOutlet private weak var errorLabel: UILabel!
+
+    @IBOutlet private weak var c1Switch: UISwitch!
+    @IBOutlet private weak var c2Switch: UISwitch!
+    @IBOutlet private weak var c3Switch: UISwitch!
+    @IBOutlet private weak var c4Switch: UISwitch!
+
+    private let converter = CurrencyConverter()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "CurrencyConverter"
+        errorLabel.text = ""
+        usdTextField.keyboardType = .numberPad
+    }
+
+    @IBAction private func convertTapped(_ sender: UIButton) {
+        errorLabel.text = ""
+
+        // 1) Validate integer-only USD
+        guard let text = usdTextField.text, !text.isEmpty else {
+            errorLabel.text = "Please enter an amount in USD."
+            return
+        }
+        guard let usd = Int(text) else {
+            errorLabel.text = "Invalid input. Integers only."
+            return
+        }
+        guard usd >= 0 else {
+            errorLabel.text = "Amount must be 0 or greater."
+            return
+        }
+
+        // 2) Collect selected currencies
+        var selected: [Int] = []
+        if c1Switch.isOn { selected.append(1) }
+        if c2Switch.isOn { selected.append(2) }
+        if c3Switch.isOn { selected.append(3) }
+        if c4Switch.isOn { selected.append(4) }
+
+        guard !selected.isEmpty else {
+            errorLabel.text = "Select at least one currency."
+            return
+        }
+
+        // 3) Convert using the model
+        let conversions = converter.convert(usd: usd, selected: selected)
+
+        // 4) Segue + pass data
+        performSegue(withIdentifier: "showResults", sender: (usd, conversions))
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard segue.identifier == "showResults",
+              let dest = segue.destination as? ResultsViewController,
+              let payload = sender as? (Int, [Int: Double]) else { return }
+
+        dest.usdAmount = payload.0
+        dest.conversions = payload.1
+    }
+}
+---------------------------------------------------------------------------------------
+
+Screen 2
+import UIKit
+
+final class ResultsViewController: UIViewController {
+
+    @IBOutlet private weak var usdLabel: UILabel!
+
+    @IBOutlet private weak var c1TitleLabel: UILabel!
+    @IBOutlet private weak var c1ValueLabel: UILabel!
+
+    @IBOutlet private weak var c2TitleLabel: UILabel!
+    @IBOutlet private weak var c2ValueLabel: UILabel!
+
+    @IBOutlet private weak var c3TitleLabel: UILabel!
+    @IBOutlet private weak var c3ValueLabel: UILabel!
+
+    @IBOutlet private weak var c4TitleLabel: UILabel!
+    @IBOutlet private weak var c4ValueLabel: UILabel!
+
+    var usdAmount: Int = 0
+    var conversions: [Int: Double] = [:]
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "Results"
+
+        usdLabel.text = "Amount in USD: \(usdAmount)"
+
+        // Set titles however you want
+        c1TitleLabel.text = "Currency 1"
+        c2TitleLabel.text = "Currency 2"
+        c3TitleLabel.text = "Currency 3"
+        c4TitleLabel.text = "Currency 4"
+
+        // Fill values or hide rows if not selected
+        configureRow(key: 1, valueLabel: c1ValueLabel, titleLabel: c1TitleLabel)
+        configureRow(key: 2, valueLabel: c2ValueLabel, titleLabel: c2TitleLabel)
+        configureRow(key: 3, valueLabel: c3ValueLabel, titleLabel: c3TitleLabel)
+        configureRow(key: 4, valueLabel: c4ValueLabel, titleLabel: c4TitleLabel)
+    }
+
+    private func configureRow(key: Int, valueLabel: UILabel, titleLabel: UILabel) {
+        if let value = conversions[key] {
+            valueLabel.isHidden = false
+            titleLabel.isHidden = false
+            valueLabel.text = String(format: "%.2f", value)
+        } else {
+            valueLabel.isHidden = true
+            titleLabel.isHidden = true
+        }
+    }
+}
+

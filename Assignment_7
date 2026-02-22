@@ -1,0 +1,121 @@
+Model
+---------------------------------------------------
+import Foundation
+
+struct Park {
+    let name: String
+    let state: String
+    let description: String
+    let bestSeason: String
+}
+---------------------------------------------------
+
+Data Source
+---------------------------------------------------
+let parks: [Park] = [
+    Park(name: "Yellowstone", state: "WY/MT/ID", description: "Geysers, hot springs, and wildlife.", bestSeason: "Summer"),
+    Park(name: "Yosemite", state: "CA", description: "Granite cliffs, waterfalls, giant sequoias.", bestSeason: "Spring"),
+    Park(name: "Grand Canyon", state: "AZ", description: "Massive canyon views and rim hikes.", bestSeason: "Fall"),
+    Park(name: "Zion", state: "UT", description: "Canyons, narrows, and big red cliffs.", bestSeason: "Spring/Fall"),
+    Park(name: "Rocky Mountain", state: "CO", description: "Alpine lakes and high-elevation trails.", bestSeason: "Summer"),
+    Park(name: "Acadia", state: "ME", description: "Coastal hikes and sunrise views.", bestSeason: "Fall"),
+    Park(name: "Glacier", state: "MT", description: "Glacial valleys and mountain roads.", bestSeason: "Summer"),
+    Park(name: "Olympic", state: "WA", description: "Rainforests, beaches, and mountains.", bestSeason: "Summer"),
+    Park(name: "Great Smoky Mountains", state: "TN/NC", description: "Mist, forests, and scenic drives.", bestSeason: "Fall"),
+    Park(name: "Joshua Tree", state: "CA", description: "Desert landscapes and boulder climbs.", bestSeason: "Winter")
+]
+---------------------------------------------------
+
+Table Screen
+---------------------------------------------------
+import UIKit
+
+class ParksViewController: UIViewController {
+
+    @IBOutlet weak var tableView: UITableView!
+
+    private let parks: [Park] = [
+        Park(name: "Yellowstone", state: "WY/MT/ID", description: "Geysers, hot springs, and wildlife.", bestSeason: "Summer"),
+        Park(name: "Yosemite", state: "CA", description: "Granite cliffs, waterfalls, giant sequoias.", bestSeason: "Spring"),
+        Park(name: "Grand Canyon", state: "AZ", description: "Massive canyon views and rim hikes.", bestSeason: "Fall"),
+        Park(name: "Zion", state: "UT", description: "Canyons, narrows, and big red cliffs.", bestSeason: "Spring/Fall"),
+        Park(name: "Rocky Mountain", state: "CO", description: "Alpine lakes and high-elevation trails.", bestSeason: "Summer"),
+        Park(name: "Acadia", state: "ME", description: "Coastal hikes and sunrise views.", bestSeason: "Fall"),
+        Park(name: "Glacier", state: "MT", description: "Glacial valleys and mountain roads.", bestSeason: "Summer"),
+        Park(name: "Olympic", state: "WA", description: "Rainforests, beaches, and mountains.", bestSeason: "Summer"),
+        Park(name: "Great Smoky Mountains", state: "TN/NC", description: "Mist, forests, and scenic drives.", bestSeason: "Fall"),
+        Park(name: "Joshua Tree", state: "CA", description: "Desert landscapes and boulder climbs.", bestSeason: "Winter")
+    ]
+
+    private var selectedPark: Park?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "National Parks"
+
+        tableView.dataSource = self
+        tableView.delegate = self
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showParkDetail",
+           let detailVC = segue.destination as? ParkDetailViewController {
+            detailVC.park = selectedPark
+        }
+    }
+}
+
+extension ParksViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return parks.count
+    }
+
+    func tableView(_ tableView: UITableView,
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ParkCell", for: indexPath)
+
+        let park = parks[indexPath.row]
+        var content = cell.defaultContentConfiguration()
+        content.text = park.name
+        content.secondaryText = park.state
+        cell.contentConfiguration = content
+        cell.accessoryType = .disclosureIndicator
+
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        selectedPark = parks[indexPath.row]
+        performSegue(withIdentifier: "showParkDetail", sender: self)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+---------------------------------------------------
+
+Detail Screen
+---------------------------------------------------
+import UIKit
+
+class ParkDetailViewController: UIViewController {
+
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var stateLabel: UILabel!
+    @IBOutlet weak var seasonLabel: UILabel!
+    @IBOutlet weak var descriptionLabel: UILabel!
+
+    var park: Park?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        guard let park else { return }
+
+        title = park.name
+        nameLabel.text = park.name
+        stateLabel.text = "State: \(park.state)"
+        seasonLabel.text = "Best season: \(park.bestSeason)"
+        descriptionLabel.text = park.description
+    }
+}
+---------------------------------------------------
